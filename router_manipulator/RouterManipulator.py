@@ -1,18 +1,20 @@
+import random
+import re
+import string
 import time
+
 import selenium.common.exceptions
+from playsound import playsound
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
-import random
-import string
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from win10toast import *
-import re
 
 
 class RouterManipulator:
@@ -51,13 +53,22 @@ class RouterManipulator:
             else:
                 quit(0)
 
-    def set_argument(self, value_):
+    def run_no_ui_args(self, value_):
         self.command = value_
+        self.play_startup_sound('router_manipulator/startup_sound.mp3')
 
         try:
             self.validate_input(is_ui=False)
         except Exception as e:
             self.log(f"An Unknown Error Occurred: {e}")
+
+
+    def play_startup_sound(self, sound_path):
+        playsound(sound_path)
+
+
+
+
 
     def validate_input(self, is_ui):
         while True:
