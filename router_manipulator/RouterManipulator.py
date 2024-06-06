@@ -52,13 +52,12 @@ class RouterManipulator:
                 quit(0)
 
     def set_argument(self, value_):
-        while True:
-            self.command = value_
+        self.command = value_
 
-            try:
-                self.validate_input(is_ui=False)
-            except Exception as e:
-                self.log(f"An Unknown Error Occurred: {e}")
+        try:
+            self.validate_input(is_ui=False)
+        except Exception as e:
+            self.log(f"An Unknown Error Occurred: {e}")
 
     def validate_input(self, is_ui):
         while True:
@@ -129,6 +128,8 @@ class RouterManipulator:
                     except ValueError:
                         print("\n\nINVALID INPUT\n\n")
                         continue
+
+
 
     def speed_manip(self, x):
         self.init_wlan_settings()
