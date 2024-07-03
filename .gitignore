@@ -5,3 +5,6 @@
 /router_manip_args.ahk
 /main.spec
 /dist/args_router_manip.exe
+/secret.py
+/dist/main.exe
+/error_log.log

@@ -1,8 +1,10 @@
+import logging
 import random
 import re
 import string
 import time
 
+import psutil
 import selenium.common.exceptions
 from playsound import playsound
 from selenium import webdriver
@@ -42,8 +44,24 @@ class RouterManipulator:
         self.weAccountPassword = weAccountPassword
         self.weURL = weURL
 
+    @staticmethod
+    def terminate_process(process_names_list=None):
+        if process_names_list is None:
+            process_names_list = ["msedge.exe", "msedgewebview2.exe", "msedgedriver.exe"]
+        browser_process_name = process_names_list  # Edge.
+
+        for proc in psutil.process_iter(['pid', 'name']):
+            try:
+                if proc.info['name'] in browser_process_name:
+                    proc.terminate()
+                    print(f"Terminated {proc.info['name']} with PID {proc.info['pid']}")
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+
+
     def run_ui(self):
         try:
+            self.terminate_process()
             self.validate_input(is_ui=True)
         except Exception as e:
             self.log(f"An Unknown Error Occurred: {e}")
@@ -55,16 +73,29 @@ class RouterManipulator:
 
     def run_no_ui_args(self, value_):
         self.command = value_
-        self.play_startup_sound('router_manipulator/startup_sound.mp3')
 
         try:
+            self.play_sound('router_manipulator/startup_sound.mp3')
+            self.terminate_process()
             self.validate_input(is_ui=False)
         except Exception as e:
+            self.log_to_file('router_manipulator/failure_sound.mp3')
             self.log(f"An Unknown Error Occurred: {e}")
+            self.log_to_file(e)
 
 
-    def play_startup_sound(self, sound_path):
+
+
+    def log_to_file(self, message):
+        logging.basicConfig(filename='error_log.log',
+                            level=logging.INFO,
+                            format='%(asctime)s:%(levelname)s:%(message)s')
+        logging.info(message)
+
+    def play_sound(self, sound_path):
         playsound(sound_path)
+
+
 
 
 
