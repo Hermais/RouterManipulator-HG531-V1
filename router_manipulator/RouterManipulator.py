@@ -16,7 +16,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
-from win10toast import *
+from plyer import notification
+
 
 
 class RouterManipulator:
@@ -24,11 +25,14 @@ class RouterManipulator:
 
     def __init__(self, routerLoginPageUserName, routerLoginPagePassword, routerURL,
                  weAccountNumber, weAccountPassword, weURL, currentQuota, logDuration, laptop_implicit_wait,
-                 browser="chrome", command="null",
+                 browser="chrome", command="null", processes_to_eliminate=None,
                  is_logging_printable=False):
         # log() method Essentials
+        if processes_to_eliminate is None:
+            processes_to_eliminate = ["msedge.exe", "msedgewebview2.exe", "msedgedriver.exe"]
+        self.processes_to_eliminate = processes_to_eliminate
         self.is_logging_printable = is_logging_printable
-        self.toaster = ToastNotifier()
+        self.plyer_notifier =notification
         # run() method Essentials
         self.command = command
         self.routerLoginPageUserName = routerLoginPageUserName
@@ -45,14 +49,13 @@ class RouterManipulator:
         self.weURL = weURL
 
     @staticmethod
-    def terminate_process(process_names_list=None):
-        if process_names_list is None:
-            process_names_list = ["msedge.exe", "msedgewebview2.exe", "msedgedriver.exe"]
-        browser_process_name = process_names_list  # Edge.
+    def terminate_process(process_names_list):
+
 
         for proc in psutil.process_iter(['pid', 'name']):
+
             try:
-                if proc.info['name'] in browser_process_name:
+                if proc.info['name'] in process_names_list:
                     proc.terminate()
                     print(f"Terminated {proc.info['name']} with PID {proc.info['pid']}")
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
@@ -61,7 +64,7 @@ class RouterManipulator:
 
     def run_ui(self):
         try:
-            self.terminate_process()
+            self.terminate_process(self.processes_to_eliminate)
             self.validate_input(is_ui=True)
         except Exception as e:
             self.log(f"An Unknown Error Occurred: {e}")
@@ -76,7 +79,7 @@ class RouterManipulator:
 
         try:
             self.play_sound('router_manipulator/startup_sound.mp3')
-            self.terminate_process()
+            self.terminate_process(self.processes_to_eliminate)
             self.validate_input(is_ui=False)
         except Exception as e:
             self.log_to_file('router_manipulator/failure_sound.mp3')
@@ -346,33 +349,38 @@ class RouterManipulator:
             self.driver.switch_to.frame('logofrm')
             self.driver.find_element(by=By.ID, value="setlogin").click()
 
-            self.wait_for_element(By.ID, "btnCancel")
+            #self.wait_for_element(By.ID, "btnCancel")
             self.driver.quit()
 
-            # Not sure why this is here.
-            time.sleep(4)
+            # # Not sure why this is here.
+            # time.sleep(4)
         else:
 
             self.log("The Wi-Fi speed is maxed.")
 
-            # Not sure why this is here.
-            time.sleep(4)
+            # # Not sure why this is here.
+            # time.sleep(4)
             self.driver.switch_to.default_content()
             self.driver.implicitly_wait(1)
             self.driver.switch_to.frame('logofrm')
             self.driver.find_element(by=By.ID, value="setlogin").click()
 
-            self.wait_for_element(By.ID, "btnCancel")
+            #self.wait_for_element(By.ID, "btnCancel")
             self.driver.quit()
 
-            # Not sure why this is here.
-            time.sleep(4)
+            # # Not sure why this is here.
+            # time.sleep(4)
 
     def log(self, message):
         if self.is_logging_printable:
             print(f"\n\n\n\n {message} \n\n\n\n")
         else:
-            self.toaster.show_toast("Router Manipulator", message, icon_path='', duration=self.logDuration)
+            self.plyer_notifier.notify(
+                title= 'Router Manipulator',
+                message=message,
+                timeout= self.logDuration
+
+            )
 
     def quota_check(self):
         global used_gb_text, renew_date_remaining_days_text
@@ -485,7 +493,7 @@ class RouterManipulator:
 
     def set_webdriver_browser(self, webdriver_instance, options, service):
         try:
-            options.add_argument("--headless")
+            #options.add_argument("--headless")
             options.add_argument("--disable-gpu")
             options.add_argument("--no-sandbox")
 
@@ -510,7 +518,8 @@ class RouterManipulator:
             )
             return element
         except Exception as e:
-            print(f"Element not found!")
+            print(f"Element not found: {e}")
+            self.log("Element not found Error.")
             return None
 
     def init_wlan_settings(self):
