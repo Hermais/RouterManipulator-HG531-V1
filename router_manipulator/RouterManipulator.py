@@ -111,7 +111,7 @@ class RouterManipulator:
                     "Hello! This is a simple program that changes the rate of the Wifi, and allows for a reboot for the router.\n")
                 self.command = input(
                     f"Please enter the desired speed being: 1, 2, 5.5, 6, 9, 11 or Type Full, to switch to full speed.\n "
-                    "Also type res to restart the router. Type quickmath or q to create a temporary Wifi network.\n "
+                    "Also type res to restart the router. Type q to create a temporary Wifi network, with the default name vessel.\n "
                     "Default password is 123456789rtx!, and default SSID name vessel (slot4).\n"
                     "To disable the temporary SSID, Enter dis.\n"
                     "To Create a costume temporary SSID name, Enter c.\n"
@@ -126,8 +126,8 @@ class RouterManipulator:
             elif self.command.lower() == 'res':
                 self.restart_fun()
                 break
-            elif self.command.lower() == 'quickmath' or self.command.lower() == 'q':
-                self.quick_math('vessel')
+            elif  self.command.lower() == 'q':
+                self.create_ssid('vessel')
                 break
             elif self.command.lower() == 'dis':
                 self.ssid_dis()
@@ -136,14 +136,14 @@ class RouterManipulator:
                 print("What is the SSID name?\n"
                       "SSID password is the same 123456789rtx!\n")
                 ssid_name = input()
-                self.quick_math(ssid_name)
+                self.create_ssid(ssid_name)
                 break
             elif self.command.lower() == 'r':
                 ssid_name = random.choice(string.ascii_letters) + random.choice(string.ascii_letters) + random.choice(
                     string.ascii_letters) * 2 + random.choice(string.ascii_letters) + random.choice(
                     string.ascii_letters) + random.choice(string.ascii_letters) + random.choice(
                     string.ascii_letters) * 3
-                self.quick_math(ssid_name)
+                self.create_ssid(ssid_name)
                 break
             elif self.command.lower() == 'chk':
                 self.chk_speed()
@@ -194,7 +194,6 @@ class RouterManipulator:
             self.driver.switch_to.frame('logofrm')
             self.driver.find_element(by=By.ID, value="setlogin").click()
 
-            self.wait_for_element(By.ID, "btnCancel")
             self.driver.quit()
             self.log(message="Wi-Fi speed is successfully set to full speed.")
         else:
@@ -214,7 +213,6 @@ class RouterManipulator:
             self.driver.switch_to.frame('logofrm')
             self.driver.find_element(by=By.ID, value="setlogin").click()
 
-            self.wait_for_element(By.ID, "btnCancel")
             self.driver.quit()
 
             self.log(message=f"Wi-Fi speed is successfully set to {x} Mbps.")
@@ -257,7 +255,7 @@ class RouterManipulator:
             self.driver.quit()
         """
 
-    def quick_math(self, y):
+    def create_ssid(self, y):
         self.init_wlan_settings()
 
         self.wait_for_element(by=By.NAME, value="wlSsidIdx")
@@ -287,7 +285,6 @@ class RouterManipulator:
         self.driver.switch_to.frame('logofrm')
         self.driver.find_element(by=By.ID, value="setlogin").click()
 
-        self.wait_for_element(By.ID, "btnCancel")
         self.driver.quit()
 
         self.log(message=f"Temporary Wi-Fi network is successfully created with SSID: {y}.")
@@ -314,7 +311,6 @@ class RouterManipulator:
             self.driver.switch_to.frame('logofrm')
             self.driver.find_element(by=By.ID, value="setlogin").click()
 
-            self.wait_for_element(By.ID, "btnCancel")
             self.driver.quit()
 
             self.log(message="Temporary Wi-Fi network is successfully disabled.")
@@ -326,7 +322,6 @@ class RouterManipulator:
             self.driver.switch_to.frame('logofrm')
             self.driver.find_element(by=By.ID, value="setlogin").click()
 
-            self.wait_for_element(By.ID, "btnCancel")
             self.driver.quit()
 
             self.log(message="Temporary Wi-Fi network is already disabled.")
@@ -349,27 +344,19 @@ class RouterManipulator:
             self.driver.switch_to.frame('logofrm')
             self.driver.find_element(by=By.ID, value="setlogin").click()
 
-            #self.wait_for_element(By.ID, "btnCancel")
             self.driver.quit()
 
-            # # Not sure why this is here.
-            # time.sleep(4)
         else:
 
             self.log("The Wi-Fi speed is maxed.")
 
-            # # Not sure why this is here.
-            # time.sleep(4)
             self.driver.switch_to.default_content()
             self.driver.implicitly_wait(1)
             self.driver.switch_to.frame('logofrm')
             self.driver.find_element(by=By.ID, value="setlogin").click()
 
-            #self.wait_for_element(By.ID, "btnCancel")
             self.driver.quit()
 
-            # # Not sure why this is here.
-            # time.sleep(4)
 
     def log(self, message):
         if self.is_logging_printable:
@@ -493,7 +480,7 @@ class RouterManipulator:
 
     def set_webdriver_browser(self, webdriver_instance, options, service):
         try:
-            #options.add_argument("--headless")
+            options.add_argument("--headless")
             options.add_argument("--disable-gpu")
             options.add_argument("--no-sandbox")
 
