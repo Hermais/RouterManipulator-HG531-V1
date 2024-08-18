@@ -19,12 +19,13 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from plyer import notification
 
 
-
 class RouterManipulator:
     default_timeout = 30
 
-    def __init__(self, routerLoginPageUserName, routerLoginPagePassword, routerURL,
-                 weAccountNumber, weAccountPassword, weURL, currentQuota, logDuration, laptop_implicit_wait,
+
+
+    def __init__(self, router_login_page_user_name, router_login_page_password, router_url,
+                 we_account_number, we_account_password, we_url, current_quota, log_duration, laptop_implicit_wait,
                  browser="chrome", command="null", processes_to_eliminate=None,
                  is_logging_printable=False):
         # log() method Essentials
@@ -32,39 +33,27 @@ class RouterManipulator:
             processes_to_eliminate = ["msedge.exe", "msedgewebview2.exe", "msedgedriver.exe"]
         self.processes_to_eliminate = processes_to_eliminate
         self.is_logging_printable = is_logging_printable
-        self.plyer_notifier =notification
+        self.plyer_notifier = notification
         # run() method Essentials
         self.command = command
-        self.routerLoginPageUserName = routerLoginPageUserName
-        self.routerLoginPagePassword = routerLoginPagePassword
-        self.routerURL = routerURL
+        self.router_login_page_user_name = router_login_page_user_name
+        self.router_login_page_password = router_login_page_password
+        self.routerURL = router_url
         self.webdriver_browser = browser
         self.driver = None
-        self.logDuration = logDuration
+        self.log_duration = log_duration
         self.laptop_implicit_wait = laptop_implicit_wait
         # We
-        self.currentQuota = currentQuota
-        self.weAccountNumber = weAccountNumber
-        self.weAccountPassword = weAccountPassword
-        self.weURL = weURL
+        self.current_quota = current_quota
+        self.we_account_number = we_account_number
+        self.we_account_password = we_account_password
+        self.we_url = we_url
 
-    @staticmethod
-    def terminate_process(process_names_list):
-
-
-        for proc in psutil.process_iter(['pid', 'name']):
-
-            try:
-                if proc.info['name'] in process_names_list:
-                    proc.terminate()
-                    print(f"Terminated {proc.info['name']} with PID {proc.info['pid']}")
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                pass
 
 
     def run_ui(self):
         try:
-            self.terminate_process(self.processes_to_eliminate)
+            # self.terminate_process(self.processes_to_eliminate)
             self.validate_input(is_ui=True)
         except Exception as e:
             self.log(f"An Unknown Error Occurred: {e}")
@@ -74,33 +63,18 @@ class RouterManipulator:
             else:
                 quit(0)
 
+
+
     def run_no_ui_args(self, value_):
         self.command = value_
-
         try:
             self.play_sound('router_manipulator/startup_sound.mp3')
-            self.terminate_process(self.processes_to_eliminate)
+            # self.terminate_process(self.processes_to_eliminate)
             self.validate_input(is_ui=False)
         except Exception as e:
             self.log_to_file('router_manipulator/failure_sound.mp3')
             self.log(f"An Unknown Error Occurred: {e}")
             self.log_to_file(e)
-
-
-
-
-    def log_to_file(self, message):
-        logging.basicConfig(filename='error_log.log',
-                            level=logging.INFO,
-                            format='%(asctime)s:%(levelname)s:%(message)s')
-        logging.info(message)
-
-    def play_sound(self, sound_path):
-        playsound(sound_path)
-
-
-
-
 
 
 
@@ -121,12 +95,12 @@ class RouterManipulator:
                     f"Finally choose your preferred browser, current one is {self.webdriver_browser.capitalize()}. (chrome, firefox or edge)\n")
             if self.command.lower() == 'full':
                 self.command = 101
-                self.speed_manip(self.command)
+                self.speed_selector(self.command)
                 break
             elif self.command.lower() == 'res':
                 self.restart_fun()
                 break
-            elif  self.command.lower() == 'q':
+            elif self.command.lower() == 'q':
                 self.create_ssid('vessel')
                 break
             elif self.command.lower() == 'dis':
@@ -151,6 +125,13 @@ class RouterManipulator:
             elif self.command.lower() == 'qchk':
                 self.quota_check()
                 break
+            elif self.command.lower() == 'block':
+                self.block_device('00:00:00:00:00:00')
+                break
+            elif self.command.lower() == 'getit':
+                self.go_to_basic_settings()
+                time.sleep(1000)
+                break
             elif self.command.lower() == 'firefox':
                 self.webdriver_browser = self.command.lower()
                 continue
@@ -164,216 +145,22 @@ class RouterManipulator:
                 quit(0)
             else:
                 try:
-                    self.speed_manip(int(self.command))
+                    self.speed_selector(int(self.command))
                     break
                 except ValueError:
                     try:
-                        self.speed_manip(float(self.command))
+                        self.speed_selector(float(self.command))
                         break
                     except ValueError:
                         print("\n\nINVALID INPUT\n\n")
                         continue
 
 
-
-    def speed_manip(self, x):
-        self.init_wlan_settings()
-        # Custom method that uses explicit wait for a web element.
-        self.wait_for_element(By.NAME, "wlgnMode")
-
-        if self.command == 101:
-            selection = Select(self.driver.find_element(by=By.NAME, value="wlgnMode"))
-            selection.select_by_value('b/g/n')
-            self.driver.find_element(by=By.NAME, value="btnApply").click()
-
-            # Exclusive for Laptop (Wi-Fi)
-            time.sleep(self.laptop_implicit_wait)
-
-            self.driver.switch_to.default_content()
-            self.driver.implicitly_wait(1)
-            self.driver.switch_to.frame('logofrm')
-            self.driver.find_element(by=By.ID, value="setlogin").click()
-
-            self.driver.quit()
-            self.log(message="Wi-Fi speed is successfully set to full speed.")
-        else:
-            selection = Select(self.driver.find_element(by=By.NAME, value="wlgnMode"))
-            selection.select_by_value('b/g')
-            self.driver.implicitly_wait(1)
-            selection = Select(self.driver.find_element(by=By.NAME, value="wlRate"))
-            self.driver.implicitly_wait(1)
-            selection.select_by_value(str(x))
-            self.driver.find_element(by=By.NAME, value="btnApply").click()
-
-            # Exclusive for Laptop (Wi-Fi)
-            time.sleep(self.laptop_implicit_wait)
-
-            self.driver.switch_to.default_content()
-            self.driver.implicitly_wait(1)
-            self.driver.switch_to.frame('logofrm')
-            self.driver.find_element(by=By.ID, value="setlogin").click()
-
-            self.driver.quit()
-
-            self.log(message=f"Wi-Fi speed is successfully set to {x} Mbps.")
-
-    def restart_fun(self):
-        self.specify_browser()
-
-        self.fill_login_page()
-
-        self.driver.implicitly_wait(1)
-        self.driver.switch_to.frame('listfrm')
-        self.driver.implicitly_wait(1)
-        self.driver.find_element(by=By.ID, value="link_Admin_3").click()
-        self.driver.find_element(by=By.ID, value="link_Admin_3_1").click()
-        self.driver.switch_to.default_content()
-        self.driver.implicitly_wait(1)
-        self.driver.switch_to.frame("contentfrm")
-        self.driver.implicitly_wait(1)
-        self.driver.find_element(by=By.NAME, value="btnReboot").click()
-        self.driver.switch_to.alert.accept()
-
-        # We can add a wait here to properly log out of the router page, but that's totally not required as the router
-        # will automatically redirect to main login page after restart
-
-        time.sleep(1)
-        self.driver.quit()
-
-        self.log(message="The router is successfully restarted.")
-
-        """
-        self.driver.switch_to.default_content()
-        self.driver.implicitly_wait(1)
-        self.driver.switch_to.frame('logofrm')
-        self.driver.find_element(by=By.ID, value="setlogin").click()
-        try:
-            WebDriverWait(self.driver, self.default_timeout).until(
-                EC.presence_of_element_located((By.ID, "btnCancel"))
-            )
-        finally:
-            self.driver.quit()
-        """
-
-    def create_ssid(self, y):
-        self.init_wlan_settings()
-
-        self.wait_for_element(by=By.NAME, value="wlSsidIdx")
-
-        selection = Select(self.driver.find_element(by=By.NAME, value="wlSsidIdx"))
-        self.driver.implicitly_wait(1)
-        selection.select_by_value('3')
-        self.driver.implicitly_wait(1)
-        self.driver.find_element(by=By.NAME, value="wlSsid").clear()
-        self.driver.find_element(by=By.NAME, value="wlSsid").send_keys(y)
-        check_box = self.driver.find_element(by=By.NAME, value="enableSsid").is_selected()
-        if not check_box:
-            self.driver.find_element(by=By.NAME, value="enableSsid").click()
-
-        selection = Select(self.driver.find_element(by=By.NAME, value="wlnAuthMode"))
-        self.driver.implicitly_wait(1)
-        selection.select_by_value('WPAand11i')
-        self.driver.find_element(by=By.NAME, value="wlWpaPsk").clear()
-        self.driver.find_element(by=By.NAME, value="wlWpaPsk").send_keys('123456789rtx!')
-        self.driver.find_element(by=By.NAME, value="btnApply").click()
-
-        # Alternative to implicit wait
-        time.sleep(self.laptop_implicit_wait)
-
-        self.driver.switch_to.default_content()
-        self.driver.implicitly_wait(1)
-        self.driver.switch_to.frame('logofrm')
-        self.driver.find_element(by=By.ID, value="setlogin").click()
-
-        self.driver.quit()
-
-        self.log(message=f"Temporary Wi-Fi network is successfully created with SSID: {y}.")
-
-    def ssid_dis(self):
-        self.init_wlan_settings()
-
-        self.wait_for_element(by=By.NAME, value="wlSsidIdx")
-
-        selection = Select(self.driver.find_element(by=By.NAME, value="wlSsidIdx"))
-        self.driver.implicitly_wait(1)
-        selection.select_by_value('3')
-        self.driver.implicitly_wait(1)
-
-        check_box = self.driver.find_element(by=By.NAME, value="enableSsid").is_selected()
-        if check_box:
-            self.driver.find_element(by=By.NAME, value="enableSsid").click()
-            self.driver.find_element(by=By.NAME, value="btnApply").click()
-
-            time.sleep(self.laptop_implicit_wait)
-
-            self.driver.switch_to.default_content()
-            self.driver.implicitly_wait(1)
-            self.driver.switch_to.frame('logofrm')
-            self.driver.find_element(by=By.ID, value="setlogin").click()
-
-            self.driver.quit()
-
-            self.log(message="Temporary Wi-Fi network is successfully disabled.")
-
-        else:
-            time.sleep(2)
-            self.driver.switch_to.default_content()
-            self.driver.implicitly_wait(1)
-            self.driver.switch_to.frame('logofrm')
-            self.driver.find_element(by=By.ID, value="setlogin").click()
-
-            self.driver.quit()
-
-            self.log(message="Temporary Wi-Fi network is already disabled.")
-
-    def chk_speed(self):
-        self.init_wlan_settings()
-
-        self.wait_for_element(by=By.NAME, value="wlgnMode")
-
-        selection = Select(self.driver.find_element(by=By.NAME, value="wlgnMode"))
-        selected_option = selection.first_selected_option
-        if selected_option.text == "802.11b/g":
-            selection = Select(self.driver.find_element(by=By.NAME, value="wlRate"))
-            selected_option = selection.first_selected_option
-
-            self.log("The Wi-Fi speed is set to " + selected_option.text + ".")
-
-            self.driver.switch_to.default_content()
-            self.driver.implicitly_wait(1)
-            self.driver.switch_to.frame('logofrm')
-            self.driver.find_element(by=By.ID, value="setlogin").click()
-
-            self.driver.quit()
-
-        else:
-
-            self.log("The Wi-Fi speed is maxed.")
-
-            self.driver.switch_to.default_content()
-            self.driver.implicitly_wait(1)
-            self.driver.switch_to.frame('logofrm')
-            self.driver.find_element(by=By.ID, value="setlogin").click()
-
-            self.driver.quit()
-
-
-    def log(self, message):
-        if self.is_logging_printable:
-            print(f"\n\n\n\n {message} \n\n\n\n")
-        else:
-            self.plyer_notifier.notify(
-                title= 'Router Manipulator',
-                message=message,
-                timeout= self.logDuration
-
-            )
-
     def quota_check(self):
         global used_gb_text, renew_date_remaining_days_text
         self.specify_browser()
 
-        self.driver.get(self.weURL)
+        self.driver.get(self.we_url)
 
         repeat = True
         while repeat:
@@ -386,8 +173,8 @@ class RouterManipulator:
                 continue
             finally:
                 repeat = False
-                self.driver.find_element(by=By.ID, value="login_loginid_input_01").send_keys(self.weAccountNumber)
-                self.driver.find_element(by=By.ID, value="login_password_input_01").send_keys(self.weAccountPassword)
+                self.driver.find_element(by=By.ID, value="login_loginid_input_01").send_keys(self.we_account_number)
+                self.driver.find_element(by=By.ID, value="login_password_input_01").send_keys(self.we_account_password)
                 self.driver.find_element(by=By.XPATH,
                                          value="/html/body/div[1]/section/main/div/div/div/div[2]/div/div[2]/div/div[1]/div/form/div/div/div/div/div/div[2]/div/div[1]/span[1]/input").click()
                 self.driver.find_element(by=By.XPATH,
@@ -438,7 +225,7 @@ class RouterManipulator:
         pattern = r"[-+]?\d*\.?\d+"  # This pattern matches the float number
         matches = re.findall(pattern, used_gb_text)
         used_gb = float(matches[0])
-        remaining_gb = self.currentQuota - used_gb
+        remaining_gb = self.current_quota - used_gb
 
         self.log(f"{used_gb_text} out of 200GB.\n{remaining_gb: 0.2f} Remaining!\n{renew_date_remaining_days_text}")
 
@@ -449,11 +236,208 @@ class RouterManipulator:
 
         self.driver.quit()
 
+
+
+    def speed_selector(self, speed):
+        self.go_to_basic_wlan_settings()
+
+        # Custom method that uses explicit wait for a web element.
+        self.wait_for_element(by=By.NAME, value="wlgnMode")
+
+        if self.command == 101:
+            selection = Select(self.driver.find_element(by=By.NAME, value="wlgnMode"))
+            selection.select_by_value('b/g/n')
+            self.driver.find_element(by=By.NAME, value="btnApply").click()
+
+            # Exclusive for Laptop (Wi-Fi)
+            time.sleep(self.laptop_implicit_wait)
+
+            self.driver.switch_to.default_content()
+            self.driver.implicitly_wait(1)
+            self.driver.switch_to.frame('logofrm')
+            self.driver.find_element(by=By.ID, value="setlogin").click()
+
+            self.driver.quit()
+            self.log(message="Wi-Fi speed is successfully set to full speed.")
+        else:
+            selection = Select(self.driver.find_element(by=By.NAME, value="wlgnMode"))
+            selection.select_by_value('b/g')
+            self.driver.implicitly_wait(1)
+            selection = Select(self.driver.find_element(by=By.NAME, value="wlRate"))
+            self.driver.implicitly_wait(1)
+            selection.select_by_value(str(speed))
+            self.driver.find_element(by=By.NAME, value="btnApply").click()
+
+            # Exclusive for Laptop (Wi-Fi)
+            time.sleep(self.laptop_implicit_wait)
+
+            self.driver.switch_to.default_content()
+            self.driver.implicitly_wait(1)
+            self.driver.switch_to.frame('logofrm')
+            self.driver.find_element(by=By.ID, value="setlogin").click()
+
+            self.driver.quit()
+
+            self.log(message=f"Wi-Fi speed is successfully set to {speed} Mbps.")
+
+    def restart_fun(self):
+        self.specify_browser()
+
+        self.fill_login_page()
+
+        self.switch_to_left_side_frame()
+        self.click_on_maintenance_settings()
+        self.click_on_maintenance_device_settings()
+        self.switch_to_content_frame()
+        self.click_on_reboot_button()
+        self.confirm_reboot_alert()
+
+        # We can add a wait here to properly log out of the router page, but that's totally not required as the router
+        # will automatically redirect to main login page after restart
+
+        time.sleep(1)
+        self.driver.quit()
+
+        self.log(message="The router is successfully restarted.")
+
+
+
+    def create_ssid(self, y):
+        self.go_to_basic_wlan_settings()
+
+        self.wait_for_element(by=By.NAME, value="wlSsidIdx")
+
+        selection = Select(self.driver.find_element(by=By.NAME, value="wlSsidIdx"))
+        self.driver.implicitly_wait(1)
+        selection.select_by_value('3')
+        self.driver.implicitly_wait(1)
+        self.driver.find_element(by=By.NAME, value="wlSsid").clear()
+        self.driver.find_element(by=By.NAME, value="wlSsid").send_keys(y)
+        check_box = self.driver.find_element(by=By.NAME, value="enableSsid").is_selected()
+        if not check_box:
+            self.driver.find_element(by=By.NAME, value="enableSsid").click()
+
+        selection = Select(self.driver.find_element(by=By.NAME, value="wlnAuthMode"))
+        self.driver.implicitly_wait(1)
+        selection.select_by_value('WPAand11i')
+        self.driver.find_element(by=By.NAME, value="wlWpaPsk").clear()
+        self.driver.find_element(by=By.NAME, value="wlWpaPsk").send_keys('123456789rtx!')
+        self.driver.find_element(by=By.NAME, value="btnApply").click()
+
+        # Alternative to implicit wait
+        time.sleep(self.laptop_implicit_wait)
+
+        self.driver.switch_to.default_content()
+        self.driver.implicitly_wait(1)
+        self.driver.switch_to.frame('logofrm')
+        self.driver.find_element(by=By.ID, value="setlogin").click()
+
+        self.driver.quit()
+
+        self.log(message=f"Temporary Wi-Fi network is successfully created with SSID: {y}.")
+
+    def ssid_dis(self):
+        self.go_to_basic_wlan_settings()
+
+        self.wait_for_element(by=By.NAME, value="wlSsidIdx")
+
+        selection = Select(self.driver.find_element(by=By.NAME, value="wlSsidIdx"))
+        self.driver.implicitly_wait(1)
+        selection.select_by_value('3')
+        self.driver.implicitly_wait(1)
+
+        check_box = self.driver.find_element(by=By.NAME, value="enableSsid").is_selected()
+        if check_box:
+            self.driver.find_element(by=By.NAME, value="enableSsid").click()
+            self.driver.find_element(by=By.NAME, value="btnApply").click()
+
+            time.sleep(self.laptop_implicit_wait)
+
+            self.driver.switch_to.default_content()
+            self.driver.implicitly_wait(1)
+            self.driver.switch_to.frame('logofrm')
+            self.driver.find_element(by=By.ID, value="setlogin").click()
+
+            self.driver.quit()
+
+            self.log(message="Temporary Wi-Fi network is successfully disabled.")
+
+        else:
+            time.sleep(2)
+            self.driver.switch_to.default_content()
+            self.driver.implicitly_wait(1)
+            self.driver.switch_to.frame('logofrm')
+            self.driver.find_element(by=By.ID, value="setlogin").click()
+
+            self.driver.quit()
+
+            self.log(message="Temporary Wi-Fi network is already disabled.")
+
+    def chk_speed(self):
+        self.go_to_basic_wlan_settings()
+
+
+        selection = Select(self.wait_for_element(by=By.NAME, value="wlgnMode"))
+        selected_option = selection.first_selected_option
+        if selected_option.text == "802.11b/g":
+            selection = Select(self.driver.find_element(by=By.NAME, value="wlRate"))
+            selected_option = selection.first_selected_option
+
+            self.log("The Wi-Fi speed is set to " + selected_option.text + ".")
+
+            self.driver.switch_to.default_content()
+            self.driver.implicitly_wait(1)
+            self.driver.switch_to.frame('logofrm')
+            self.driver.find_element(by=By.ID, value="setlogin").click()
+
+            self.driver.quit()
+
+        else:
+
+            self.log("The Wi-Fi speed is maxed.")
+
+            self.driver.switch_to.default_content()
+            self.driver.implicitly_wait(1)
+            self.driver.switch_to.frame('logofrm')
+            self.driver.find_element(by=By.ID, value="setlogin").click()
+
+            self.driver.quit()
+
+
+    def block_device(self, device_mac):
+        self.go_to_basic_wlan_filtering_settings()
+        if not self.driver.find_element(by=By.ID, value="isFilter").is_selected():
+            self.driver.find_element(by=By.ID, value="isFilter").click()
+            time.sleep(self.laptop_implicit_wait)
+
+        wlan_filtering_table_element = self.wait_for_element(by=By.XPATH, value="/html/body/form/div[1]/table[2]/tbody/tr[2]/td/table[1]")
+        wlan_filtering_table_rows_elements = wlan_filtering_table_element.find_elements(by=By.TAG_NAME, value="tr")
+        wlan_filtering_table_rows = [row.text.strip() for row in wlan_filtering_table_rows_elements][1:]
+
+        print(wlan_filtering_table_rows)
+
+        if device_mac.upper() in wlan_filtering_table_rows:
+            self.log(f"The device with MAC address {device_mac} is already blocked.")
+            return
+
+        # TODO: Now that requested mac isn't already blocked, we need to add to blacklist.
+
+    def log(self, message):
+        message = message[:256]  # Truncate the message to 256 characters
+
+        print(f"\n\n\n\n {message} \n\n\n\n")
+        self.plyer_notifier.notify(
+            title='Router Manipulator',
+            message=message,
+            timeout=self.log_duration
+
+        )
+
     def has_numbers(self, input_string):
         return any(char.isdigit() for char in input_string)
 
     def evaluate(self, used_GB, remaining_days):
-        std_usage_rate_GB = self.currentQuota / 30.0
+        std_usage_rate_GB = self.current_quota / 30.0
         usage_rate_GB = used_GB / (30 - remaining_days)
 
         if usage_rate_GB - std_usage_rate_GB >= 0.07 * std_usage_rate_GB:
@@ -480,7 +464,7 @@ class RouterManipulator:
 
     def set_webdriver_browser(self, webdriver_instance, options, service):
         try:
-            options.add_argument("--headless")
+            #options.add_argument("--headless")
             options.add_argument("--disable-gpu")
             options.add_argument("--no-sandbox")
 
@@ -492,11 +476,11 @@ class RouterManipulator:
 
     def fill_login_page(self):
         self.driver.get(self.routerURL)
-        self.driver.find_element(by=By.NAME, value="Username").send_keys(self.routerLoginPageUserName)
+        self.driver.find_element(by=By.NAME, value= "Username").send_keys(self.router_login_page_user_name)
 
-        self.driver.find_element(by=By.NAME, value="Password").send_keys(self.routerLoginPagePassword)
+        self.driver.find_element(by=By.NAME, value= "Password" ).send_keys(self.router_login_page_password)
 
-        self.driver.find_element(by=By.ID, value="btnLogin").click()
+        self.driver.find_element(by=By.ID, value= "btnLogin").click()
 
     def wait_for_element(self, by, value, timeout=default_timeout):
         try:
@@ -509,22 +493,97 @@ class RouterManipulator:
             self.log("Element not found Error.")
             return None
 
-    def init_wlan_settings(self):
+
+    def go_to_basic_settings(self):
         self.specify_browser()
-
         self.fill_login_page()
+        self.switch_to_left_side_frame()
+        self.click_on_basic_settings()
 
-        self.driver.implicitly_wait(1)
+    def switch_to_left_side_frame(self):
         self.wait_for_element(By.ID, 'listfrm')
         self.driver.switch_to.frame('listfrm')
-        self.driver.implicitly_wait(1)
 
+
+
+    def click_on_basic_settings(self):
         self.wait_for_element(By.ID, "link_Admin_1").click()
 
+
+    def go_to_basic_wlan_settings(self):
+        self.go_to_basic_settings()
         self.driver.find_element(by=By.ID, value="link_Admin_1_2").click()
-        self.driver.implicitly_wait(1)
         self.driver.switch_to.default_content()
-        self.driver.implicitly_wait(1)
+        self.switch_to_content_frame()
+
+
+    def go_to_maintenance_settings(self):
+        self.specify_browser()
+        self.fill_login_page()
+        self.switch_to_left_side_frame()
+        self.click_on_maintenance_settings()
+
+    def go_to_maintenance_device_settings(self):
+        self.go_to_maintenance_settings()
+        self.switch_to_tab_frame()
+        self.wait_for_element(by=By.ID, value="link_Admin_3_2").click()
+        self.switch_to_content_frame()
+
+
+    def click_on_maintenance_settings(self):
+        self.wait_for_element(By.ID, "link_Admin_3").click()
+
+    def click_on_maintenance_device_settings(self):
+        self.wait_for_element(By.ID, "link_Admin_3_1").click()
+
+    def click_on_reboot_button(self):
+        self.wait_for_element(By.NAME, "btnReboot").click()
+
+    def confirm_reboot_alert(self):
+        self.driver.switch_to.alert.accept()
+
+    def switch_to_content_frame(self):
+        self.driver.switch_to.default_content()
         self.wait_for_element(By.ID, 'contentfrm')
         self.driver.switch_to.frame('contentfrm')
-        self.driver.implicitly_wait(1)
+
+
+
+    def go_to_basic_wlan_filtering_settings(self):
+        self.go_to_basic_wlan_settings()
+        self.switch_to_tab_frame()
+        self.wait_for_element(by=By.ID, value="link_Admin_1_2_1").click()
+        self.switch_to_content_frame()
+
+
+
+
+
+
+
+    def switch_to_tab_frame(self):
+        self.driver.switch_to.default_content()
+        self.wait_for_element(By.ID, 'tabfrm')
+        self.driver.switch_to.frame('tabfrm')
+
+
+
+    def log_to_file(self, message):
+        logging.basicConfig(filename='error_log.log',
+                            level=logging.INFO,
+                            format='%(asctime)s:%(levelname)s:%(message)s')
+        logging.info(message)
+
+    def play_sound(self, sound_path):
+        playsound(sound_path)
+
+    @staticmethod
+    def terminate_process(process_names_list):
+        for proc in psutil.process_iter(['pid', 'name']):
+            try:
+                if proc.info['name'] in process_names_list:
+                    proc.terminate()
+                    print(f"Terminated {proc.info['name']} with PID {proc.info['pid']}")
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+        print('Process termination done.')
