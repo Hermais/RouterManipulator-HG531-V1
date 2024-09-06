@@ -67,7 +67,7 @@ class HG531V1RouterManipulator:
             else:
                 quit(0)
 
-    def run_no_ui_args(self, value_):
+    def run_args(self, value_):
         self.command = value_
         try:
             Util.play_sound('router_manipulator/startup_sound.mp3')
