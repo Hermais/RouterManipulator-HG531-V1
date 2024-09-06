@@ -4,7 +4,7 @@
 The **HG531V1RouterManipulator** is a Python-based module designed to interact with Huawei HG531V1 routers. It allows users to manipulate router settings such as WiFi speed, SSID creation, router reboot, and internet quota checking. The module is capable of being run in both a command-line (CLI) interface as well as a User Interface (UI) mode.
 
 ## Features
-- Change WiFi speed (options: 1, 2, 5.5, 6, 9, 11, or Full speed).
+- Change Wi-Fi speed (options: 1, 2, 5.5, 6, 9, 11, or Full speed).
 - Reboot the router.
 - Disable or create temporary SSID networks.
 - Check internet quota usage and remaining quota.
@@ -30,7 +30,8 @@ The **HG531V1RouterManipulator** is a Python-based module designed to interact w
 Before running the module, you need to set up your router login credentials and WE account details (if using quota checking functionality).
 
 ```python
-manipulator = HG531V1RouterManipulator(
+from router_manipulator import hg_531_v1
+manipulator = hg_531_v1.HG531V1RouterManipulator(
     router_login_page_user_name="your_router_username",
     router_login_page_password="your_router_password",
     router_url="http://your.router.url",
@@ -87,6 +88,32 @@ manipulator.run_args('full')  # Example: Set the WiFi to full speed
 - Enter `res` to restart the router.
 - Enter `chk` to check the current WiFi speed.
 - Enter `qchk` to check the remaining quota.
+
+### Example Script that accepts CLI arguments
+```python
+from  secret import MySecrets
+import sys
+from router_manipulator import hg_531_v1
+program = hg_531_v1.HG531V1RouterManipulator(router_login_page_user_name="admin",
+                                       router_login_page_password=MySecrets.routerLoginPagePassword,
+                                       router_url="http://192.168.1.1/",
+                                       we_account_number=MySecrets.weAccountNumber,
+                                       we_account_password=MySecrets.weAccountPassword,
+                                       we_url="https://my.te.eg/user/login",
+                                       current_quota=200,
+                                       log_duration=5,
+                                       browser="edge",
+                                       laptop_implicit_wait=15,
+                                       )
+program.command = program.run_args(sys.argv[1])
+```
+
+Assuming the script file name is `router_script.py`, you can run the script with the following command:
+```bash
+python router_script.py full
+```
+
+*Note*: The `secret.py` file should contain your router login password and WE account password.
 
 ## Error Handling
 In case of an unknown error, a log entry will be created in the Windows logs, and the error will be displayed. The user will have the option to retry or quit the program.
