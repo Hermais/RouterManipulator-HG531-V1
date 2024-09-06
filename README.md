@@ -9,7 +9,7 @@ The **HG531V1RouterManipulator** is a Python-based module designed to interact w
 - Disable or create temporary SSID networks.
 - Check internet quota usage and remaining quota.
 - Switch between Chrome, Firefox, and Edge browsers.
-- Perform device blocking operations.
+- Perform device blocking operations (soon).
 - Log router actions for future reference.
 - Customizable via a wide array of command-line options.
 
