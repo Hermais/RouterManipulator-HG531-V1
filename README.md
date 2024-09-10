@@ -112,6 +112,9 @@ Assuming the script file name is `router_script.py`, you can run the script with
 ```bash
 python router_script.py full
 ```
+Also you can use the provided example autohotkey script `router_manip_args_no_exe.ahk`, after providing you python path and script absolute path.  
+This means that you need to install authotkey on your system first.
+
 
 *Note*: The `secret.py` file should contain your router login password and WE account password.
 
