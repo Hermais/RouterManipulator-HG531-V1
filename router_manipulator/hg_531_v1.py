@@ -296,21 +296,15 @@ class HG531V1RouterManipulator:
         self.go_to_basic_wlan_settings()
 
         selection = Select(self.wait_for_element(by=By.NAME, value="wlgnMode"))
-        selected_option = selection.first_selected_option
-        if selected_option.text == "802.11b/g":
+        selected_option = selection.first_selected_option.text
+        if selected_option == "802.11b/g":
             selection = Select(self.driver.find_element(by=By.NAME, value="wlRate"))
-            selected_option = selection.first_selected_option
-
-            self.exit_from_basic_wlan_settings()
-
-            Util.windows_log(log_duration=self.log_duration,
-                             message="The Wi-Fi speed is set to " + selected_option.text + ".")
+            wlan_mode = selection.first_selected_option.text
 
 
-        else:
-
-            self.exit_from_basic_wlan_settings()
-            Util.windows_log(log_duration=self.log_duration, message="The Wi-Fi speed is maxed.")
+        self.exit_from_basic_wlan_settings()
+        Util.windows_log(log_duration=self.log_duration,
+                         message=f"Wi-Fi speed is  {"maxed" if selected_option != "802.11b/g" else wlan_mode}.")
 
     # TODO: Complete this code.
     def block_device(self, device_mac):
