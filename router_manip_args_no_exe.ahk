@@ -1,5 +1,5 @@
-﻿pythonPath := "C:\Users\gombi\AppData\Local\Programs\Python\Python312\python.exe"
-pyScriptPath := "D:\SoftwareProjectFiles\Python_Projects\router_manipulator_laptop\args_router_manip.py"
+﻿pythonPath := ;"C:\Users\gombi\AppData\Local\Programs\Python\Python312\python.exe" Use you own python file path
+pyScriptPath := "D:\SoftwareProjectFiles\Python_Projects\router_manipulator_laptop\example_args_router_manip.py"
 
 ^+!1::
 {
