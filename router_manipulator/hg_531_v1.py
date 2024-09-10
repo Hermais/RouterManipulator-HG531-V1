@@ -12,6 +12,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
+from secret import MySecrets
 from .utils import Util
 
 
@@ -24,7 +25,7 @@ class HG531V1RouterManipulator:
                  is_logging_printable=False):
         # log() method Essentials
         if default_ssid_password is None:
-            default_ssid_password = "123456789rtx!"
+            default_ssid_password = MySecrets.default_wifi_password
         if processes_to_eliminate is None:
             processes_to_eliminate = ["msedge.exe", "msedgewebview2.exe", "msedgedriver.exe"]
         self.default_temp_password = default_ssid_password
@@ -109,7 +110,7 @@ class HG531V1RouterManipulator:
                 self.create_ssid(ssid_name=input())
                 break
             elif self.command.lower() == 'r' or self.command.lower() == 'random ssid':
-                self.create_ssid()
+                self.create_ssid(ssid_name=Util.generate_random_text(length=12))
                 break
             elif self.command.lower() == 'chk' or self.command.lower() == 'check speed':
                 self.chk_speed()
@@ -185,7 +186,7 @@ class HG531V1RouterManipulator:
         remaining_gb = self.current_quota - used_gb
 
         Util.windows_log(log_duration=self.log_duration,
-                         message=f"{used_gb_text} out of 200GB.\n{remaining_gb: 0.2f} Remaining!\n{renew_date_remaining_days_text}")
+                         message=f"{used_gb_text} out of {self.current_quota}GB.\n{remaining_gb: 0.2f} Remaining!\n{renew_date_remaining_days_text}")
 
         float_pattern = r', (\d+)'
         remaining_days = int(re.search(float_pattern, renew_date_remaining_days_text).group(1))
@@ -329,7 +330,13 @@ class HG531V1RouterManipulator:
 
     def evaluate_rate_of_usage(self, used_gb, remaining_days):
         std_usage_rate_gb = self.current_quota / 30.0
-        usage_rate_gb = used_gb / (30 - remaining_days)
+        try:
+            usage_rate_gb = used_gb / (30 - remaining_days)
+        except ZeroDivisionError:
+            Util.windows_log(log_duration=self.log_duration, message=
+            f"Wait another day to calculate the accurate rate of usage.")
+            return
+
 
         if usage_rate_gb - std_usage_rate_gb >= 0.07 * std_usage_rate_gb:
             Util.windows_log(log_duration=self.log_duration, message=
